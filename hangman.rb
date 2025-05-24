@@ -1,10 +1,11 @@
 class Hangman
-  attr_accessor :correct_guesses, :incorrect_guesses,:word
+  attr_accessor :correct_guesses, :incorrect_guesses,:guesses,:word
 
-  def initialize(correct_guesses, incorrect_guesses = [], word = false)
+  def initialize(correct_guesses, guesses = [], word = false)
     self.word = word
     self.correct_guesses = correct_guesses
-    @incorrect_guesses = incorrect_guesses
+    @incorrect_guesses = 0
+    @guesses = guesses
   end
 
   def word=(input) # <= sets the word to a random wordfrom word list or from saved file
@@ -29,27 +30,35 @@ class Hangman
   end
 
   def guess_check(char) # <= checks if guess has been guessed already & valid then sets it into correct variable
+    system("clear")
     char = char.downcase
-    if @correct_guesses.include?(char) || @incorrect_guesses.include?(char)
-      puts "You have already guessed '#{char}'. Please enter a different char"
+    if @guesses.include?(char)
+      raise "You have already guessed '#{char}'. Please enter a different char"
       return
     end
     if !char.match?(/[[:alpha:]]/) || char.length > 1
-      puts "Invalid: Please enter a letter"
+      raise "\n~~~~Invalid: Please enter a letter~~~~"
       return
     end
     if @word.include?(char) 
-      @correct_guesses[@word.index(char)] = char
+      @word.each_char.with_index do |letter, index|
+        @correct_guesses[index] = char if letter == char
+      end
+      @guesses << char
     else
-      @incorrect_guesses << char
+      @incorrect_guesses += 1
+      @guesses << char
     end
   end
 
   def end_game
-     if @correct_guesses.to_s == @word
-       puts "You win!"
-     elsif @incorrect_guesses.length == 6
-        puts "You lose, the word was #{@word}"
+     if @correct_guesses.join == @word
+      puts "You win!The word was #{@word}\n"
+      return true
+     elsif @incorrect_guesses == 6
+      puts "\nYou lose, the word was #{@word}\n"
+      return true
      end
+     false
   end
 end
